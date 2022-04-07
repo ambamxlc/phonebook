@@ -1,5 +1,11 @@
 const express = require("express");
+const req = require("express/lib/request");
 const app = express();
+const morgan = require("morgan");
+morgan.token("body", (req) => JSON.stringify(req.body));
+app.use(morgan(":method :url :status :response-time ms :body"));
+// app.use(morgan("tiny"));
+app.use(express.json());
 
 let persons = [
   {
@@ -27,12 +33,12 @@ app.get("/", (request, response) => {
   response.send("<h2>Hello Planet!</h2>");
 });
 
-app.get("/api/persons", (request, response) => {
-  response.end(JSON.stringify(persons));
+app.get("/api/persons", morgan(`tiny`), (request, response) => {
+  response.send(JSON.stringify(persons));
 });
 
 app.get("/info", (request, response) => {
-  response.end(
+  response.send(
     `<h1>Phonebook has info for four people</h1> <p>${new Date()}</p>`
   );
 });
@@ -63,10 +69,10 @@ app.post("/api/persons", (request, response) => {
     number: body.number,
   };
   if (!body.name || !body.number) {
-    return response.status(400).json({ error: `name or num is missin` });
+    return response.status(400).json({ error: `name or num is missing` });
   }
   if (persons.map((x) => x.name).includes(body.name)) {
-    return response.status(400).json({ error: `name must be uniqu` });
+    return response.status(400).json({ error: `name must be unique` });
   }
   console.log(persons);
   persons = persons.concat(person);
